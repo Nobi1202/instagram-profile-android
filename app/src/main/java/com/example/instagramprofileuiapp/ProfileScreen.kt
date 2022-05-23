@@ -1,9 +1,12 @@
 package com.example.instagramprofileuiapp
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.GridCells
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
@@ -21,9 +24,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -35,6 +40,9 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun ProfileScreen() {
+    var selectedTabIndex by remember {
+        mutableStateOf(0)
+    }
     Column(modifier = Modifier.fillMaxSize()) {
         TopBar(name = "Nobi")
         Spacer(modifier = Modifier.height(4.dp))
@@ -69,6 +77,42 @@ fun ProfileScreen() {
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp)
         )
+        Spacer(modifier = Modifier.height(10.dp))
+        PostTabView(
+            imageWithTexts = listOf(
+                ImageWithText(
+                    image = painterResource(id = R.drawable.ic_grid),
+                    text = "Posts"
+                ),
+                ImageWithText(
+                    image = painterResource(id = R.drawable.ic_reels),
+                    text = "Reels"
+                ),
+                ImageWithText(
+                    image = painterResource(id = R.drawable.ic_igtv),
+                    text = "IGTV"
+                ),
+                ImageWithText(
+                    image = painterResource(id = R.drawable.profile),
+                    text = "Profile"
+                )
+            )
+        ) {
+            selectedTabIndex = it
+        }
+        when (selectedTabIndex) {
+            0 -> PostSection(
+                posts = listOf(
+                    painterResource(id = R.drawable.kmm),
+                    painterResource(id = R.drawable.intermediate_dev),
+                    painterResource(id = R.drawable.master_logical_thinking),
+                    painterResource(id = R.drawable.bad_habits),
+                    painterResource(id = R.drawable.multiple_languages),
+                    painterResource(id = R.drawable.learn_coding_fast)
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 }
 
@@ -352,6 +396,7 @@ fun HighlightSection(
 @Composable
 fun PostTabView(
     modifier: Modifier = Modifier,
+    imageWithTexts: List<ImageWithText>,
     onTabSelected: (selectedIndex: Int) -> Unit
 ) {
     var selectedTabIndex by remember {
@@ -364,22 +409,47 @@ fun PostTabView(
         contentColor = Color.Black,
         modifier = modifier
     ) {
-        Tab(
-            selected = selectedTabIndex == 0,
-            selectedContentColor = Color.Black,
-            unselectedContentColor = inactiveColor,
-            onClick = {
-                selectedTabIndex = 0
-                onTabSelected(0)
+        imageWithTexts.forEachIndexed { index, item ->
+            Tab(
+                selected = selectedTabIndex == index,
+                selectedContentColor = Color.Black,
+                unselectedContentColor = inactiveColor,
+                onClick = {
+                    selectedTabIndex = index
+                    onTabSelected(index)
+                }
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_grid),
+                    contentDescription = item.text,
+                    tint = if (selectedTabIndex == index) Color.Black else inactiveColor,
+                    modifier = modifier
+                        .padding(10.dp)
+                        .size(20.dp)
+                )
             }
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_grid),
-                contentDescription = "Posts",
-                tint = if (selectedTabIndex == 0) Color.Black else inactiveColor,
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun PostSection(
+    posts: List<Painter>,
+    modifier: Modifier = Modifier
+) {
+    LazyVerticalGrid(
+        cells = GridCells.Fixed(3),
+        modifier = modifier.scale(1.01f)
+    ) {
+        items(posts.size) {
+            Image(
+                painter = posts[it],
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
                 modifier = modifier
-                    .padding(10.dp)
-                    .size(20.dp)
+                    .aspectRatio(1f)
+                    .border(width = 1.dp, color = Color.White)
             )
         }
     }
